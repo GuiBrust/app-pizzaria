@@ -8,8 +8,9 @@ import Router from 'next/router';
 type AuthContextData = {
   user: UserProps;
   isAuthenticated: boolean;
-  signIn: (credentials: SiginProps) => Promise<void>;
+  signIn: (credentials: SignInProps) => Promise<void>;
   signOut: () => void;
+  signUp: (credentials: SignUpProps) => Promise<void>;
 }
 
 type UserProps = {
@@ -18,7 +19,13 @@ type UserProps = {
   email: string;
 }
 
-type SiginProps = {
+type SignInProps = {
+  email: string;
+  password: string;
+}
+
+type SignUpProps = {
+  name: string;
   email: string;
   password: string;
 }
@@ -42,7 +49,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<UserProps>();
   const isAuthenticated = !!user;
 
-  async function signIn({ email, password }: SiginProps) {
+  async function signIn({ email, password }: SignInProps) {
     try {
       const response = await api.post('session', { email, password });
       const { id, name, token } = response.data;
@@ -68,8 +75,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }
 
+  async function signUp({ name, email, password }: SignUpProps) {
+    try {
+      const response = await api.post('users', { name, email, password });
+      const { id, token } = response.data;
+
+      Router.push('/');
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, signIn, signOut, signUp }}>
       {children}
     </AuthContext.Provider>
   )
