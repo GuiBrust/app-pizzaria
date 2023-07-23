@@ -2,6 +2,7 @@
   "name": "app-pizzaria",
   "version": "1.0.0",
   "scripts": {
-    "dev": "concurrently \"cd backend && yarn dev\" \"cd frontend && yarn dev\""
+    "dev": "concurrently \"cd backend && yarn dev\" \"cd frontend && yarn dev\"",
+    "install-deps": "cd backend && yarn install && cd ../frontend && yarn install"
   }
 }
