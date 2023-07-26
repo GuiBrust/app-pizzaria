@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useState } from "react";
+import { createContext, ReactNode, useState, useEffect } from "react";
 
 import { api } from '../services/apiClient';
 
@@ -51,12 +51,31 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<UserProps>();
   const isAuthenticated = !!user;
 
+  useEffect(() => {
+    const { '@nextauth.token': token } = parseCookies();
+
+    if (token) {
+      api.get('me').then(response => {
+        const { id, name, email } = response.data;
+
+        setUser({
+          id,
+          name,
+          email
+        })
+      }).catch(() => {
+        signOut();
+      })
+    }
+
+  }, [])
+
   async function signIn({ email, password }: SignInProps) {
     try {
       const response = await api.post('session', { email, password });
       const { id, name, token } = response.data;
 
-      setCookie(undefined, '@nextauth.token',token, {
+      setCookie(undefined, '@nextauth.token', token, {
         maxAge: 60 * 60 * 24 * 30, // 30 days
         path: '/' // all routes possuem acesso ao cookie
       })
@@ -74,7 +93,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       Router.push('/dashboard');
 
-    } catch (error) {  
+    } catch (error) {
       toast.error('Erro ao realizar login!')
     }
   }
