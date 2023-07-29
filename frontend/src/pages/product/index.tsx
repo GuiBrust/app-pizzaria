@@ -1,24 +1,50 @@
-import { useState, FormEvent } from 'react'
+/* eslint-disable @next/next/no-img-element */
+import { useState, FormEvent, ChangeEvent } from 'react'
 import Head from 'next/head'
 import { Header } from "../../components/ui/Header"
 import styles from './styles.module.scss'
+import Image from 'next/image'
 
 import { setupAPIClient } from '../../services/api'
 import { toast } from 'react-toastify'
 
 import { canSSRAuth } from '../../utils/canSSRAuth'
 
-export default function Product(){
+import { FcAddImage } from 'react-icons/fc'
+
+export default function Product() {
+  const [imageUrl, setImageUrl] = useState('');
+  const [imageProd, setImage] = useState(null);
+
+  function handleFile(e: ChangeEvent<HTMLInputElement>) {
+    console.log(e.target.files)
+    if (!e.target.files) {
+      return;
+    }
+
+    const file = e.target.files[0]
+
+    if (!file) {
+      return;
+    }
+
+    if (file.type === 'image/jpeg' || file.type === 'image/png') {
+      setImage(file)
+      setImageUrl(URL.createObjectURL(file))
+    } else {
+      toast.error('Formato de imagem inválido!')
+    }
+  }
+
   const [name, setName] = useState('')
   const [price, setPrice] = useState('')
   const [category_id, setCategory] = useState('')
-  const [image, setImage] = useState('')
   const [description, setDescription] = useState('')
 
-  async function handleRegister(event: FormEvent){
+  async function handleRegister(event: FormEvent) {
     event.preventDefault();
 
-    if (!name || !price || !category_id || !image || !description) {
+    if (!name || !price || !category_id || !description) {
       toast.error('Preencha todos os campos!')
       return
     }
@@ -29,7 +55,6 @@ export default function Product(){
         name,
         price,
         category_id,
-        image,
         description
       })
 
@@ -37,14 +62,13 @@ export default function Product(){
       setName('')
       setPrice('')
       setCategory('')
-      setImage('')
       setDescription('')
     } catch (error) {
       toast.error('Erro ao cadastrar produto!')
     }
   }
 
-  return(
+  return (
     <>
       <Head>
         <title>Produtos - Pizzaria</title>
@@ -56,8 +80,25 @@ export default function Product(){
           <h1>Cadastrar Produtos</h1>
 
           <form className={styles.form} onSubmit={handleRegister}>
-            {/* Campo para enviar foto */}
 
+            <label className={styles.labelImage}>
+              <span>
+                <FcAddImage size={30} />
+              </span>
+
+              <input type='file' accept='image/png, image/jpeg' onChange={handleFile} />
+
+              {imageUrl && (
+                <img
+                  className={styles.previewImage}
+                  src={imageUrl}
+                  alt="Imagem do produto"
+                  width={250}
+                  height={250}
+                />
+              )}
+
+            </label>
 
             <select>
               <option value="1">Pizza</option>
