@@ -22,6 +22,10 @@ interface CategoryProps {
 }
 
 export default function Product({ categoriesList }: CategoryProps) {
+  const [name, setName] = useState('')
+  const [price, setPrice] = useState('')
+  const [description, setDescription] = useState('')
+
   const [imageUrl, setImageUrl] = useState('');
   const [imageProd, setImage] = useState(null);
 
@@ -52,30 +56,33 @@ export default function Product({ categoriesList }: CategoryProps) {
     setCategoriesSelected(Number(e.target.value))
   }
 
-  const [name, setName] = useState('')
-  const [price, setPrice] = useState('')
-  const [description, setDescription] = useState('')
-
   async function handleRegister(event: FormEvent) {
     event.preventDefault();
 
-    if (!name || !price || !description) {
+    if (!name || !price || !description || !imageProd ) {
       toast.error('Preencha todos os campos!')
-      return
+      return;
     }
 
     try {
-      const api = setupAPIClient()
-      await api.post('/products', {
-        name,
-        price,
-        description
-      })
+      const data = new FormData()
+
+      data.append('name', name);
+      data.append('price', price);
+      data.append('description', description);
+      data.append('file', imageProd);
+      data.append('category_id', categories[categoriesSelected].id);
+
+      const apiClient = setupAPIClient();
+
+      await apiClient.post('/products', data);
 
       toast.success('Produto cadastrado com sucesso!')
       setName('')
       setPrice('')
       setDescription('')
+      setCategoriesSelected(null)
+      setImageUrl('')
     } catch (error) {
       toast.error('Erro ao cadastrar produto!')
     }
@@ -125,7 +132,7 @@ export default function Product({ categoriesList }: CategoryProps) {
 
             <input
               type="text"
-              placeholder='Produto'
+              placeholder='Nome do Produto'
               className={styles.input}
               value={name}
               onChange={(e) => setName(e.target.value)}
