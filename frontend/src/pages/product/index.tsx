@@ -12,9 +12,21 @@ import { canSSRAuth } from '../../utils/canSSRAuth'
 
 import { FcAddImage } from 'react-icons/fc'
 
-export default function Product() {
+type ItemProps = {
+  id: string;
+  name: string;
+}
+
+interface CategoryProps {
+  categoriesList: ItemProps[]
+}
+
+export default function Product({ categoriesList }: CategoryProps) {
   const [imageUrl, setImageUrl] = useState('');
   const [imageProd, setImage] = useState(null);
+
+  const [categories, setCategories] = useState(categoriesList || [])
+  const [categoriesSelected, setCategoriesSelected] = useState(0)
 
   function handleFile(e: ChangeEvent<HTMLInputElement>) {
     console.log(e.target.files)
@@ -36,15 +48,18 @@ export default function Product() {
     }
   }
 
+  function handleChangeCategory(e: ChangeEvent<HTMLSelectElement>) {
+    setCategoriesSelected(Number(e.target.value))
+  }
+
   const [name, setName] = useState('')
   const [price, setPrice] = useState('')
-  const [category_id, setCategory] = useState('')
   const [description, setDescription] = useState('')
 
   async function handleRegister(event: FormEvent) {
     event.preventDefault();
 
-    if (!name || !price || !category_id || !description) {
+    if (!name || !price || !description) {
       toast.error('Preencha todos os campos!')
       return
     }
@@ -54,14 +69,12 @@ export default function Product() {
       await api.post('/products', {
         name,
         price,
-        category_id,
         description
       })
 
       toast.success('Produto cadastrado com sucesso!')
       setName('')
       setPrice('')
-      setCategory('')
       setDescription('')
     } catch (error) {
       toast.error('Erro ao cadastrar produto!')
@@ -100,10 +113,14 @@ export default function Product() {
 
             </label>
 
-            <select>
-              <option value="1">Pizza</option>
-              <option value="2">Bebida</option>
-              <option value="3">Sobremesa</option>
+            <select value={categoriesSelected} onChange={handleChangeCategory}>
+              {categories.map((item, index) => {
+                return (
+                  <option key={item.id} value={index}>
+                    {item.name}
+                  </option>
+                )
+              })}
             </select>
 
             <input
@@ -141,7 +158,12 @@ export default function Product() {
 }
 
 export const getServerSideProps = canSSRAuth(async (ctx) => {
+  const apiClient = setupAPIClient(ctx)
+  const response = await apiClient.get('/categories')
+
   return {
-    props: {}
+    props: {
+      categoriesList: response.data
+    }
   }
 })
