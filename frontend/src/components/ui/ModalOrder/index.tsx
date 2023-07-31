@@ -9,11 +9,12 @@ interface ModalOrderProps {
   isOpen: boolean;
   onRequestClose: () => void;
   order: OrderItemProps[];
+  handleFinishedOrder: (order_id: string) => void;
 }
 
-export function ModalOrder({ isOpen, onRequestClose, order }: ModalOrderProps) {
+export function ModalOrder({ isOpen, onRequestClose, order, handleFinishedOrder }: ModalOrderProps) {
   const customStyles = {
-    content:{
+    content: {
       top: '50%',
       bottom: 'auto',
       left: '50%',
@@ -26,8 +27,6 @@ export function ModalOrder({ isOpen, onRequestClose, order }: ModalOrderProps) {
       backgroundColor: 'rgba(0, 0, 0, 0.5)'
     }
   };
-
-  debugger
 
   return (
     <Modal
@@ -42,23 +41,23 @@ export function ModalOrder({ isOpen, onRequestClose, order }: ModalOrderProps) {
         className='react-modal-close'
         style={{ background: 'transparent', border: 0 }}
       >
-        <IoMdCloseCircle size={24} color='f34748'/>
+        <IoMdCloseCircle size={24} color='f34748' />
       </button>
 
       <div className={styles.container}>
         <h2>Detalhes do Pedido</h2>
         <span className={styles.table}>
-        Mesa: <strong>{order[0].order.table}</strong>
-      </span>
+          Mesa: <strong>{order[0].order.table}</strong>
+        </span>
 
-      {order.map( item => (
-        <section key={item.id} className={styles.containerItem}>
-          <span>{item.amount} - <strong>{item.product.name}</strong></span>
-          <span className={styles.description}>{item.product.description}</span>
-        </section>
-      ))}
+        {order.map(item => (
+          <section key={item.id} className={styles.containerItem}>
+            <span>{item.amount} - <strong>{item.product.name}</strong></span>
+            <span className={styles.description}>{item.product.description}</span>
+          </section>
+        ))}
 
-        <button className={styles.buttonOrder} onClick={() => {}}>
+        <button className={styles.buttonOrder} onClick={() => handleFinishedOrder(order[0].order_id)}>
           <span>Finalizar Pedido</span>
         </button>
 

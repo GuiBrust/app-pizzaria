@@ -11,6 +11,7 @@ import { setupAPIClient } from '../../services/api'
 import { ModalOrder } from '../../components/ui/ModalOrder'
 
 import Modal from 'react-modal';
+import { toast } from 'react-toastify';
 
 type OrderProps = {
   id: string;
@@ -68,6 +69,29 @@ export default function Dashboard({ orders }: HomeProps) {
     setModalIsOpen(true)
   }
 
+  async function handleFinishedOrder(order_id: string) {
+    const apiClient = setupAPIClient();
+
+    await apiClient.put(`/orders/finish`, {
+      order_id
+    })
+
+    const response = await apiClient.get('/orders');
+    setOrderList(response.data)
+
+    setModalIsOpen(false)
+    toast.success('Pedido finalizado com sucesso!')
+  }
+
+  async function handleRefreshOrders() {
+    const apiClient = setupAPIClient();
+
+    const response = await apiClient.get('/orders');
+    setOrderList(response.data)
+
+    toast.success('Pedidos atualizados!')
+  }
+
   Modal.setAppElement('#__next');
 
   return (
@@ -81,12 +105,16 @@ export default function Dashboard({ orders }: HomeProps) {
         <main className={styles.container}>
           <div className={styles.containerHeader}>
             <h1>Últimos pedidos</h1>
-            <button>
+            <button onClick={handleRefreshOrders}>
               <FiRefreshCcw size={25} color="#3fffa3" />
             </button>
           </div>
 
           <article className={styles.listOrders}>
+
+            {orderList.length === 0 && (
+              <span className={styles.emptyList}>Nenhum pedido em aberto...</span>
+            )}
 
             {orderList.map(item => (
               <section key={item.id} className={styles.orderItem}>
@@ -100,12 +128,12 @@ export default function Dashboard({ orders }: HomeProps) {
           </article>
         </main>
 
-        { modalIsOpen && (
+        {modalIsOpen && (
           <ModalOrder
             isOpen={modalIsOpen}
             onRequestClose={handleClosedModal}
             order={modalItem}
-
+            handleFinishedOrder={handleFinishedOrder}
           />
         )}
       </div>
