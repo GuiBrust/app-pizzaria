@@ -42,10 +42,10 @@ export function ModalOrder({ isOpen, onRequestClose, order }: ModalOrderProps) {
         className='react-modal-close'
         style={{ background: 'transparent', border: 0 }}
       >
-        <IoMdCloseCircle size={24}/>
+        <IoMdCloseCircle size={24} color='f34748'/>
       </button>
 
-      <div>
+      <div className={styles.container}>
         <h2>Detalhes do Pedido</h2>
         <span className={styles.table}>
         Mesa: <strong>{order[0].order.table}</strong>
@@ -57,6 +57,12 @@ export function ModalOrder({ isOpen, onRequestClose, order }: ModalOrderProps) {
           <span className={styles.description}>{item.product.description}</span>
         </section>
       ))}
+
+        <button className={styles.buttonOrder} onClick={() => {}}>
+          <span>Finalizar Pedido</span>
+        </button>
+
+
       </div>
 
     </Modal>
