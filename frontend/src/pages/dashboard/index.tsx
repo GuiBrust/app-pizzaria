@@ -8,6 +8,10 @@ import { FiRefreshCcw } from 'react-icons/fi'
 
 import { setupAPIClient } from '../../services/api'
 
+import { ModalOrder } from '../../components/ui/ModalOrder'
+
+import Modal from 'react-modal';
+
 type OrderProps = {
   id: string;
   table: string | number;
@@ -20,13 +24,51 @@ interface HomeProps {
   orders: OrderProps[];
 }
 
+export type OrderItemProps = {
+  id: string;
+  amount: number;
+  order_id: string;
+  product_id: string;
+  product: {
+    id: string;
+    name: string;
+    description: string;
+    price: number;
+    banner: string;
+  }
+  order: {
+    id: string;
+    table: string | number;
+    status: boolean;
+    name: string | null;
+  }
+}
+
 export default function Dashboard({ orders }: HomeProps) {
 
   const [orderList, setOrderList] = useState(orders || [])
 
-  function handleOpenModalView(order_id: string) {
-    alert(order_id)
+  const [modalItem, setModalItem] = useState<OrderItemProps[]>()
+  const [modalIsOpen, setModalIsOpen] = useState(false)
+
+  function handleClosedModal() {
+    setModalIsOpen(false)
   }
+
+  async function handleOpenModalView(order_id: string) {
+    const apiClient = setupAPIClient();
+
+    const response = await apiClient.get(`/orders/detail`, {
+      params: {
+        order_id
+      }
+    })
+
+    setModalItem(response.data)
+    setModalIsOpen(true)
+  }
+
+  Modal.setAppElement('#__next');
 
   return (
     <>
@@ -48,7 +90,7 @@ export default function Dashboard({ orders }: HomeProps) {
 
             {orderList.map(item => (
               <section key={item.id} className={styles.orderItem}>
-                <button onClick={ () => handleOpenModalView(item.id) }>
+                <button onClick={() => handleOpenModalView(item.id)}>
                   <div className={styles.tag}></div>
                   <span>Mesa {item.table}</span>
                 </button>
@@ -57,6 +99,15 @@ export default function Dashboard({ orders }: HomeProps) {
 
           </article>
         </main>
+
+        { modalIsOpen && (
+          <ModalOrder
+            isOpen={modalIsOpen}
+            onRequestClose={handleClosedModal}
+            order={modalItem}
+
+          />
+        )}
       </div>
     </>
   )
